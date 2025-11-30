@@ -1,0 +1,59 @@
+# Simple AltServer-Linux Docker image
+# This provides a base environment for running AltServer-Linux
+
+FROM alpine:3.15
+
+# Set labels
+LABEL maintainer="AltServer-Linux Docker Team"
+LABEL description="AltServer for AltStore - Docker environment"
+LABEL version="1.0"
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    libssl1.1 \
+    libcrypto1.1 \
+    libuuid \
+    curl \
+    bash \
+    git \
+    make \
+    cmake \
+    clang \
+    clang-dev \
+    boost-static \
+    boost-dev \
+    libressl-dev \
+    util-linux-dev \
+    zlib-dev \
+    zlib-static \
+    python3 \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user
+RUN addgroup -g 1000 altserver && \
+    adduser -D -s /bin/sh -u 1000 -G altserver altserver
+
+# Create directories
+RUN mkdir -p /app /app/logs /app/data /src && \
+    chown -R altserver:altserver /app /src
+
+# Copy documentation
+COPY README*.md /app/
+
+# Copy environment template
+COPY .env.example /app/.env.example
+
+# Copy docker-compose files
+COPY docker-compose*.yml /app/
+
+# Switch to user
+USER altserver
+WORKDIR /app
+
+# Set environment variables
+ENV TZ=UTC
+
+# Default command
+CMD ["/bin/bash"]

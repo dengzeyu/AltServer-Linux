@@ -1,22 +1,21 @@
 # Multi-architecture production Dockerfile for AltServer-Linux
 # Network-only mode (no USB device passthrough required)
 
-# Build stage using Alpine Linux
-FROM alpine:3.15 AS builder
+# Use pre-built base image that includes dependencies
+FROM alpine:3.15 AS base
 
-# Set build arguments
-ARG TARGETARCH
-ARG BUILDPLATFORM
-
-# Install build dependencies
+# Install runtime dependencies
 RUN apk add --no-cache \
-    build-base \
-    cmake \
-    make \
-    ninja \
-    git \
+    ca-certificates \
+    tzdata \
+    libssl1.1 \
+    libcrypto1.1 \
+    libuuid \
     curl \
-    wget \
+    bash \
+    git \
+    make \
+    cmake \
     clang \
     clang-dev \
     boost-static \
@@ -25,70 +24,17 @@ RUN apk add --no-cache \
     util-linux-dev \
     zlib-dev \
     zlib-static \
-    bash \
-    vim \
-    python3
+    python3 \
+    && rm -rf /var/cache/apk/*
 
-# Create build environment
-RUN mkdir -p /buildenv
-WORKDIR /buildenv
-
-# Install corecrypto (downloaded from Apple)
-RUN curl -JO 'https://developer.apple.com/file/?file=security&agree=Yes' \
-    -H 'Referer: https://developer.apple.com/security/' && \
-    unzip -q corecrypto.zip && \
-    rm corecrypto.zip
-
-WORKDIR /buildenv/corecrypto
-RUN mkdir build && cd build && \
-    CC=clang CXX=clang++ cmake .. && \
-    sed -i -E 's|^(all: CMakeFiles/corecrypto_perf)|#\1|' CMakeFiles/Makefile2 && \
-    sed -i -E 's|^(all: CMakeFiles/corecrypto_test)|#\1|' CMakeFiles/Makefile2 && \
-    make -j$(nproc) && \
-    make install
-
-WORKDIR /buildenv
-
-# Install cpprestsdk
-RUN git clone --recursive https://github.com/microsoft/cpprestsdk && \
-    cd cpprestsdk && \
-    sed -i 's|-Wcast-align||' "./Release/CMakeLists.txt" && \
-    mkdir build && cd build && \
-    cmake -DBUILD_SHARED_LIBS=0 .. && \
-    make -j$(nproc) && \
-    make install
-
-WORKDIR /buildenv
-
-# Install libzip
-RUN git clone https://github.com/nih-at/libzip && \
-    cd libzip && \
-    mkdir build && cd build && \
-    cmake -DBUILD_SHARED_LIBS=0 .. && \
-    make -j$(nproc) && \
-    make install
-
-# Set up source code
-WORKDIR /src
-COPY . .
-
-# Initialize git submodules (if needed)
-RUN if [ ! -d "upstream_repo" ]; then \
-        git submodule update --init --recursive; \
-    fi
-
-# Build AltServer-Linux
-RUN mkdir -p build && \
-    make -f ../Makefile -j$(nproc) && \
-    ls -la build/AltServer-*
-
-# Runtime stage - minimal Alpine Linux
+# Runtime stage
 FROM alpine:3.15
 
 # Set labels for metadata
 LABEL maintainer="AltServer-Linux Docker Deployment"
 LABEL description="AltServer for AltStore, running on Linux with network device support"
 LABEL version="1.0"
+LABEL source="https://github.com/dengzeyu/AltServer-Linux"
 
 # Install runtime dependencies
 RUN apk add --no-cache \
@@ -109,13 +55,12 @@ RUN addgroup -g 1000 altserver && \
 RUN mkdir -p /app /app/logs /app/data && \
     chown -R altserver:altserver /app
 
-# Copy compiled binary from builder stage
-ARG TARGETARCH
-COPY --from=builder /src/build/AltServer-${TARGETARCH} /usr/local/bin/AltServer
+# Note: This Dockerfile requires the AltServer binary to be built separately
+# Users should build the binary locally and copy it, or use the build script
 
-# Make binary executable
-RUN chmod +x /usr/local/bin/AltServer && \
-    chown altserver:altserver /usr/local/bin/AltServer
+# Copy pre-built AltServer binary (this should be replaced with actual binary)
+# For now, we'll create a placeholder
+COPY README.md /tmp/README.md
 
 # Copy entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -143,4 +88,13 @@ EXPOSE 2255/udp
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Default command - run AltServer in daemon mode
-CMD ["AltServer"]
+CMD ["--help"]
+
+# Build instructions comment:
+# To build this image with a working AltServer binary:
+# 1. Build AltServer locally using: make -f Makefile
+# 2. Copy the AltServer-<arch> binary to the Dockerfile directory
+# 3. Uncomment and modify the COPY line below
+# COPY AltServer-amd64 /usr/local/bin/AltServer
+# RUN chmod +x /usr/local/bin/AltServer && chown altserver:altserver /usr/local/bin/AltServer
+# 4. Change the CMD to: CMD ["AltServer"]

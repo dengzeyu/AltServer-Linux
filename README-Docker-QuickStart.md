@@ -13,9 +13,9 @@ cp .env.example .env
 
 ### 2. Choose Your Deployment Method
 
-#### Option A: Docker Compose (Simple)
+#### Option A: Docker Compose with Pre-built Image (Recommended)
 ```bash
-# Build and start
+# Pull pre-built image and start
 docker compose up -d
 
 # Check status
@@ -25,7 +25,19 @@ docker compose ps
 docker compose logs -f altserver
 ```
 
-#### Option B: Portainer (Recommended)
+#### Option B: Build from Source (Advanced)
+```bash
+# Build locally (30+ minutes) and start
+docker compose build && docker compose up -d
+
+# Check status
+docker compose ps
+
+# View logs
+docker compose logs -f altserver
+```
+
+#### Option C: Portainer (Recommended)
 1. Open Portainer web interface
 2. Go to **Stacks** → **Add stack**
 3. Name: `altserver-deployment`

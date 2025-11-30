@@ -1,0 +1,36 @@
+# Minimal AltServer-Linux Docker image
+FROM alpine:3.15
+
+# Set labels
+LABEL maintainer="AltServer-Linux Docker Team"
+LABEL description="AltServer for AltStore - Docker environment"
+LABEL version="1.0"
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    libssl1.1 \
+    libcrypto1.1 \
+    libuuid \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user
+RUN addgroup -g 1000 altserver && \
+    adduser -D -s /bin/sh -u 1000 -G altserver altserver
+
+# Create directories
+RUN mkdir -p /app /app/logs /app/data && \
+    chown -R altserver:altserver /app
+
+# Switch to user
+USER altserver
+WORKDIR /app
+
+# Set environment variables
+ENV TZ=UTC
+
+# Default command
+CMD ["/bin/bash", "-c", "echo 'AltServer-Linux Docker environment ready'"]

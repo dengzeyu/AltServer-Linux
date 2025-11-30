@@ -57,7 +57,7 @@ coverage/
 circle.yml
 
 # Docker specific
-Dockerfile*
+Dockerfile.simple
 docker-compose*.yml
 .dockerignore
 

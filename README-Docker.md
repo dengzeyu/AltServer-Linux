@@ -387,10 +387,10 @@ ANISETTE_SERVER=https://api.anisette.org/v1
 
 ### Option 3: Self-Hosted Anisette Server (Recommended for Privacy)
 
-Deploy your own anisette server using [Dadoum/anisette-v3-server](https://github.com/Dadoum/anisette-v3-server):
+Deploy your own anisette server using the official [Dadoum/anisette-v3-server](https://github.com/Dadoum/anisette-v3-server) Docker image from Docker Hub:
 
 ```bash
-# Start self-hosted anisette server
+# Start self-hosted anisette server (pulls automatically from Docker Hub)
 docker-compose --profile anisette up -d
 
 # Configure AltServer to use your local anisette server
@@ -400,6 +400,8 @@ ANISETTE_SERVER=http://anisette-server:8080
 # Restart AltServer to use new anisette server
 docker-compose restart altserver
 ```
+
+**Note**: The `dadoum/anisette-v3-server:latest` image is pulled automatically from Docker Hub - no local building required!
 
 #### Benefits of Self-Hosted Anisette:
 - ✅ **Privacy**: Your Apple ID credentials never leave your network

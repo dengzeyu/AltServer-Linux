@@ -118,10 +118,10 @@ NO_SUBSCRIBE=0
 
 ### Optional: Self-Hosted Anisette Server (Recommended for Privacy)
 
-For maximum privacy and reliability, deploy your own anisette server:
+For maximum privacy and reliability, deploy your own anisette server using the official Docker Hub image:
 
 ```bash
-# Start self-hosted anisette server
+# Start self-hosted anisette server (pulls automatically from Docker Hub)
 docker compose --profile anisette up -d
 
 # Configure AltServer to use your local anisette server
@@ -131,6 +131,8 @@ ANISETTE_SERVER=http://anisette-server:8080
 # Restart AltServer to use the new anisette server
 docker compose restart altserver
 ```
+
+**Note**: The `dadoum/anisette-v3-server:latest` image is automatically pulled from Docker Hub - no manual building required!
 
 #### Why Self-Hosted Anisette?
 - ✅ **Privacy**: Apple credentials never leave your network

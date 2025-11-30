@@ -1,0 +1,175 @@
+version: '3.8'
+
+# Portainer-optimized AltServer-Linux deployment
+# This configuration is optimized for Portainer stack deployment
+
+services:
+  altserver:
+    image: altserver-linux:latest
+    container_name: altserver
+    restart: unless-stopped
+
+    # Network mode for Portainer compatibility
+    networks:
+      - portainer_agent_network
+
+    # Portainer-specific environment variables with defaults
+    environment:
+      - ALTSERVER_ANISETTE_SERVER=${ANISETTE_SERVER:-https://armconverter.com/anisette/irGb3Quww8zrhgqnzmrx}
+      - ALTSERVER_NO_SUBSCRIBE=${NO_SUBSCRIBE:-0}
+      - TZ=${TZ:-UTC}
+      - ALTSERVER_DEBUG=${DEBUG:-0}
+      - PORTAINER_STACK=${PORTAINER_STACK_NAME:-altserver}
+
+    # Data persistence using Portainer-managed volumes
+    volumes:
+      - altserver_data:/app/data
+      - altserver_logs:/app/logs
+
+    # Port mapping for network device discovery
+    ports:
+      - "2255:2255/udp"
+
+    # Deployment constraints for Portainer
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+      restart_policy:
+        condition: unless-stopped
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+    # Enhanced health check for Portainer monitoring
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "AltServer"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Enhanced logging for Portainer
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "service=altserver,stack=${PORTAINER_STACK_NAME:-altserver}"
+
+    # Security labels for Portainer
+    labels:
+      - "traefik.enable=false"
+      - "portainer.stack.stack=${PORTAINER_STACK_NAME:-altserver}"
+      - "portainer.stack.service=altserver"
+      - "altserver.service.type=main"
+      - "altserver.network.mode=host"
+
+  # Optional custom anisette server for Portainer
+  anisette-server:
+    image: nyamisty/alt_anisette_server:latest
+    container_name: altserver-anisette
+    restart: unless-stopped
+    profiles:
+      - anisette  # Enable in Portainer by adding 'anisette' to profiles
+
+    networks:
+      - portainer_agent_network
+
+    environment:
+      - ANISETTE_SERVER_PORT=8080
+      - TZ=${TZ:-UTC}
+      - PORTAINER_STACK=${PORTAINER_STACK_NAME:-altserver}
+
+    ports:
+      - "8080:8080/tcp"
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+      restart_policy:
+        condition: unless-stopped
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+        labels: "service=anisette-server,stack=${PORTAINER_STACK_NAME:-altserver}"
+
+    labels:
+      - "traefik.enable=false"
+      - "portainer.stack.stack=${PORTAINER_STACK_NAME:-altserver}"
+      - "portainer.stack.service=anisette-server"
+      - "altserver.service.type=anisette"
+      - "altserver.profile=anisette"
+
+# Network configuration optimized for Portainer
+networks:
+  portainer_agent_network:
+    external: true
+    name: portainer_agent_network
+    labels:
+      - "portainer.network=external"
+      - "altserver.network=portainer"
+
+  # Fallback network if Portainer agent network is not available
+  altserver-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+    labels:
+      - "altserver.network=internal"
+      - "portainer.network=custom"
+
+# Volume configuration with Portainer labels
+volumes:
+  altserver_data:
+    driver: local
+    labels:
+      - "altserver.volume=data"
+      - "portainer.volume=data"
+      - "portainer.stack=${PORTAINER_STACK_NAME:-altserver}"
+
+  altserver_logs:
+    driver: local
+    labels:
+      - "altserver.volume=logs"
+      - "portainer.volume=logs"
+      - "portainer.stack=${PORTAINER_STACK_NAME:-altserver}"
+
+# Portainer stack configuration
+x-portainer-stackspec:
+  name: AltServer-Linux
+  description: AltServer for AltStore with network device support and configurable anisette server
+  version: "1.0"
+  author: AltServer-Linux Docker Team
+  website: https://github.com/NyaMisty/AltServer-Linux

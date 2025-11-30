@@ -25,6 +25,29 @@ The following environment var can be set for some special situation:
 - Precompiled static binary can be downloaded in Release ( also have a look at pre-release ;) )
 - Nightly version is available as Github Actions artifacts
 
+## 🐳 Docker Deployment
+
+### Quick Docker Setup (Recommended)
+Deploy AltServer-Linux in just 5 minutes using Docker:
+
+```bash
+git clone --recursive https://github.com/NyaMisty/AltServer-Linux
+cd AltServer-Linux
+cp .env.example .env
+docker compose up -d
+```
+
+### Portainer Support
+- **Quick Start**: [README-Docker-QuickStart.md](README-Docker-QuickStart.md) - 5-minute deployment
+- **Complete Guide**: [README-Docker.md](README-Docker.md) - Full documentation and troubleshooting
+
+### Docker Features
+- Network-based iOS device discovery (no USB passthrough)
+- Multi-architecture support (amd64, arm64, armv7)
+- Configurable anisette server
+- Health monitoring and resource limits
+- Portainer stack deployment ready
+
 ## TODO / Special Features
 - [x] Track upstream (AltServer-Windows) develop branch (i.e. Beta version)
 - [x] Support Offline Anisette Data Generation (i.e. without Sideloadly)

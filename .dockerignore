@@ -1,0 +1,133 @@
+# Git and version control
+.git
+.gitignore
+.gitmodules
+.gitattributes
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Build artifacts and intermediate files
+build/
+*.o
+*.a
+*.so
+*.so.*
+AltServer-*
+corecrypto.zip
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-*
+
+# Build directories
+output/
+dist/
+target/
+Binaries/
+
+# Test files and coverage
+tests/
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+circle.yml
+
+# Docker specific
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Configuration files that shouldn't be in container
+.env
+.env.*
+config/
+settings/
+
+# Logs and runtime data
+logs/
+data/
+*.pid
+*.lock
+
+# Dependencies that will be built in container
+dependencies/
+vendor/
+node_modules/
+
+# Development tools
+Makefile
+makefiles/
+*.mak
+
+# Scripts and tools not needed in runtime
+scripts/
+tools/
+buildenv/*.sh
+makefiles/*.sh
+buildenv/
+
+# Cache and package files
+.cache/
+*.cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Large binary files and archives
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Compiler and build system files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+*.pbxproj
+*.xcworkspace
+*.xcodeproj
+
+# Include required submodules for build
+# libraries/  # Keep libraries - they are needed for build
+
+# Development documentation
+CHANGELOG*
+CONTRIBUTING*
+LICENSE*
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Runtime and system files
+*.pid
+*.lock
+*.sock

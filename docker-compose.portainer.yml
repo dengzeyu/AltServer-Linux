@@ -74,9 +74,9 @@ services:
       - "altserver.service.type=main"
       - "altserver.network.mode=host"
 
-  # Optional custom anisette server for Portainer
+  # Optional self-hosted anisette server for Portainer
   anisette-server:
-    image: nyamisty/alt_anisette_server:latest
+    image: dadoum/anisette-v3-server:latest
     container_name: altserver-anisette
     restart: unless-stopped
     profiles:
@@ -88,10 +88,15 @@ services:
     environment:
       - ANISETTE_SERVER_PORT=8080
       - TZ=${TZ:-UTC}
+      - ANISETTE_DEBUG=${DEBUG:-0}
+      - ANISETTE_LOG_LEVEL=${DEBUG:-info}
       - PORTAINER_STACK=${PORTAINER_STACK_NAME:-altserver}
 
     ports:
       - "8080:8080/tcp"
+
+    volumes:
+      - portainer_anisette_data:/data
 
     deploy:
       mode: replicated
@@ -164,6 +169,13 @@ volumes:
     labels:
       - "altserver.volume=logs"
       - "portainer.volume=logs"
+      - "portainer.stack=${PORTAINER_STACK_NAME:-altserver}"
+
+  portainer_anisette_data:
+    driver: local
+    labels:
+      - "altserver.volume=anisette-data"
+      - "portainer.volume=anisette-data"
       - "portainer.stack=${PORTAINER_STACK_NAME:-altserver}"
 
 # Portainer stack configuration

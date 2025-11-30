@@ -56,9 +56,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Optional custom anisette server (disabled by default)
+  # Optional self-hosted anisette server (disabled by default)
   anisette-server:
-    image: nyamisty/alt_anisette_server:latest
+    image: dadoum/anisette-v3-server:latest
     container_name: altserver-anisette
     restart: unless-stopped
     profiles:
@@ -67,6 +67,8 @@ services:
     environment:
       - ANISETTE_SERVER_PORT=8080
       - TZ=${TZ:-UTC}
+      - ANISETTE_DEBUG=${DEBUG:-0}
+      - ANISETTE_LOG_LEVEL=${DEBUG:-info}
 
     ports:
       - "8080:8080/tcp"
@@ -100,6 +102,10 @@ services:
         max-size: "5m"
         max-file: "2"
 
+    # Data persistence for anisette server
+    volumes:
+      - anisette_data:/data
+
 # Network configuration
 networks:
   altserver-net:
@@ -130,3 +136,12 @@ volumes:
       device: ${PWD}/logs
     labels:
       - "altserver.volume=logs"
+
+  anisette_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/anisette-data
+    labels:
+      - "altserver.volume=anisette-data"

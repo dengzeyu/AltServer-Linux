@@ -385,16 +385,70 @@ ANISETTE_SERVER=https://anisette.nya.software
 ANISETTE_SERVER=https://api.anisette.org/v1
 ```
 
-### Option 3: Custom Anisette Server
+### Option 3: Self-Hosted Anisette Server (Recommended for Privacy)
 
-Enable the built-in anisette server:
+Deploy your own anisette server using [Dadoum/anisette-v3-server](https://github.com/Dadoum/anisette-v3-server):
 
 ```bash
-# Start with anisette profile
+# Start self-hosted anisette server
 docker-compose --profile anisette up -d
 
-# Configure AltServer to use local anisette
+# Configure AltServer to use your local anisette server
+# Edit .env and set:
 ANISETTE_SERVER=http://anisette-server:8080
+
+# Restart AltServer to use new anisette server
+docker-compose restart altserver
+```
+
+#### Benefits of Self-Hosted Anisette:
+- ✅ **Privacy**: Your Apple ID credentials never leave your network
+- ✅ **Reliability**: No dependency on external services
+- ✅ **Control**: Full control over authentication process
+- ✅ **Offline Capability**: Works without internet connection to external services
+- ✅ **No Rate Limits**: No restrictions from public anisette servers
+
+#### Self-Hosted Anisette Configuration:
+```yaml
+# In docker-compose.yml
+services:
+  anisette-server:
+    image: dadoum/anisette-v3-server:latest
+    environment:
+      - ANISETTE_SERVER_PORT=8080
+      - ANISETTE_DEBUG=0
+      - ANISETTE_LOG_LEVEL=info
+    volumes:
+      - ./anisette-data:/data  # Persistent data storage
+    ports:
+      - "8080:8080"
+```
+
+#### Managing Self-Hosted Anisette:
+```bash
+# Check anisette server status
+docker logs altserver-anisette
+
+# Test anisette server connectivity
+curl -v http://localhost:8080/health
+
+# View anisette server logs
+docker logs -f altserver-anisette
+
+# Restart anisette server
+docker-compose restart anisette-server
+
+# Backup anisette data
+sudo tar czf anisette-backup.tar.gz anisette-data/
+```
+
+### Option 4: External Anisette Server
+
+If you have an existing anisette server:
+
+```bash
+# Configure to use external server
+ANISETTE_SERVER=http://your-anisette-server.com:8080
 ```
 
 ## Monitoring and Maintenance

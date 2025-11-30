@@ -116,14 +116,32 @@ DEBUG=0
 NO_SUBSCRIBE=0
 ```
 
-### Optional: Custom Anisette Server
+### Optional: Self-Hosted Anisette Server (Recommended for Privacy)
+
+For maximum privacy and reliability, deploy your own anisette server:
+
 ```bash
-# Enable local anisette server
+# Start self-hosted anisette server
 docker compose --profile anisette up -d
 
-# Or in Portainer, add "anisette" to profiles
-# Set ANISETTE_SERVER=http://anisette-server:8080
+# Configure AltServer to use your local anisette server
+# Edit .env and change:
+ANISETTE_SERVER=http://anisette-server:8080
+
+# Restart AltServer to use the new anisette server
+docker compose restart altserver
 ```
+
+#### Why Self-Hosted Anisette?
+- ✅ **Privacy**: Apple credentials never leave your network
+- ✅ **Reliability**: No dependency on external services
+- ✅ **No Rate Limits**: No restrictions from public servers
+- ✅ **Offline Capability**: Works without external internet
+
+#### In Portainer:
+1. Add `anisette` to the profiles section
+2. Set `ANISETTE_SERVER=http://anisette-server:8080`
+3. Deploy the stack
 
 ## 📊 Monitoring
 
@@ -198,7 +216,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - ALTSERVER_ANISETTE_SERVER=https://armconverter.com/anisette/irGb3Quww8zrhgqnzmrx
+      - ALTSERVER_ANISETTE_SERVER=http://anisette-server:8080  # Use self-hosted anisette
       - TZ=America/New_York
       - DEBUG=0
     volumes:
@@ -215,10 +233,34 @@ services:
       timeout: 10s
       retries: 3
 
+  # Optional: Self-hosted anisette server (enable in Portainer profiles)
+  anisette-server:
+    image: dadoum/anisette-v3-server:latest
+    container_name: altserver-anisette
+    restart: unless-stopped
+    environment:
+      - ANISETTE_SERVER_PORT=8080
+      - TZ=America/New_York
+    ports:
+      - "8080:8080/tcp"
+    volumes:
+      - anisette_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   altserver_data:
   altserver_logs:
+  anisette_data:
 ```
+
+**In Portainer:**
+1. Add `anisette` to the **Profiles** section for the anisette-server
+2. The AltServer will automatically connect to the local anisette server
+3. For public anisette, change `ALTSERVER_ANISETTE_SERVER` to a public URL
 
 ## 🆘 Troubleshooting
 

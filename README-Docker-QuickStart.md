@@ -50,18 +50,54 @@ docker inspect altserver | grep Health -A 5
 docker logs altserver
 ```
 
-## 📱 Connect iOS Device
+## 📱 Connect iOS Device & Authentication
+
+### 🔑 How Authentication Works
+
+The Docker setup runs in **daemon mode** (server mode) which means:
+
+- ✅ **No UDID, Apple ID, or password needed in Docker**
+- ✅ **Enter Apple ID and password in AltStore on iOS device**
+- ✅ **UDID detected automatically** when device connects
+- ✅ **Secure authentication** handled by AltStore app
 
 ### Network Setup Requirements:
 - ✅ iOS device and Docker host on same WiFi network
 - ✅ AltStore installed on iOS device
 - ✅ Internet access for anisette server authentication
+- ✅ Apple ID credentials ready for AltStore setup
 
 ### Connection Steps:
-1. Make sure your iOS device is on WiFi
-2. Open AltStore on your iOS device
-3. AltStore should automatically discover your AltServer
-4. If not discovered, ensure port 2255/UDP is open on your network
+1. **Make sure your iOS device is on WiFi** (same network as Docker host)
+2. **Open AltStore on your iOS device**
+3. **AltServer should automatically discover your Docker AltServer**
+4. **Enter Apple ID and password** in AltStore when prompted
+5. **Install apps normally** through AltStore
+
+### 🔐 Authentication Details:
+- **Apple ID**: Enter in AltStore → Settings
+- **Password**: Use app-specific password (recommended)
+- **UDID**: Auto-detected by AltStore when device connects
+- **Multiple devices**: Each device gets automatic UDID detection
+
+### If Using Command Line (Advanced)
+```bash
+# For one-off installations with specific credentials
+docker run --rm \
+  -v /path/to/app.ipa:/app.ipa \
+  altserver-linux:latest \
+  AltServer -u "DEVICE-UDID" -a "apple-id@example.com" -p "app-password" /app.ipa
+```
+
+### How to Get Your Device UDID (if needed)
+1. **From AltStore (Easiest)**: Open AltStore → Settings → Device ID
+2. **From Mac**: `system_profiler SPUSBDataType | grep "Serial Number"`
+3. **From iTunes**: Connect device → Click serial number → Copy UDID
+
+### Troubleshooting Authentication:
+- **Device not found**: Check WiFi connection and network discovery
+- **Authentication failed**: Verify Apple ID and app-specific password
+- **Port blocked**: Ensure UDP port 2255 is open on your network
 
 ## 🔧 Configuration Options
 

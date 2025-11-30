@@ -25,6 +25,166 @@ This Docker deployment provides:
 - **Portainer optimization**: Ready for stack deployment
 - **Health monitoring**: Built-in health checks and logging
 - **Resource management**: Configurable limits and reservations
+- **Two deployment modes**: Daemon mode (server) or CLI mode (one-off installations)
+
+## 📱 Authentication: UDID, Apple ID, and Password
+
+### 🔄 Daemon Mode (Default - Recommended)
+
+The default Docker setup runs AltServer as a **background server** that automatically discovers iOS devices. In this mode:
+
+- ✅ **No UDID required** - automatically detected
+- ✅ **No Apple ID/Password in Docker** - enter in AltStore on iOS device
+- ✅ **Persistent server** for multiple app installations
+- ✅ **Network discovery** of iOS devices
+
+#### How it works:
+1. **AltServer runs continuously** in Docker container
+2. **AltStore on iOS** discovers the server automatically via network
+3. **Apple ID and password** are entered securely in AltStore on your iOS device
+4. **Device UDID** is detected automatically when iOS device connects
+5. **No sensitive credentials** stored in Docker configuration
+
+### 🔧 CLI Mode (One-off Installations)
+
+For automation or one-time IPA installations, you can pass credentials directly:
+
+#### Method 1: Direct Command Execution
+```bash
+# Run IPA installation with credentials
+docker run --rm \
+  -v /path/to/your/app.ipa:/app.ipa \
+  altserver-linux:latest \
+  AltServer -u "YOUR-DEVICE-UDID" -a "your-apple-id@example.com" -p "your-password" /app.ipa
+```
+
+#### Method 2: Environment Variables
+```bash
+# Create .env.local file (add to .gitignore!)
+echo "ALT_UDID=00008030-001234567890001E" >> .env.local
+echo "ALT_APPLEID=your-apple-id@example.com" >> .env.local
+echo "ALT_PASSWORD=abcd-efgh-ijkl-mnop" >> .env.local
+
+# Run with environment variables
+docker run --rm --env-file .env.local \
+  -v ./app.ipa:/app.ipa \
+  altserver-linux:latest \
+  AltServer -u "${ALT_UDID}" -a "${ALT_APPLEID}" -p "${ALT_PASSWORD}" /app.ipa
+```
+
+#### Method 3: Docker Compose with Command Override
+```yaml
+# docker-compose.cli.yml
+version: '3.8'
+services:
+  altserver:
+    image: altserver-linux:latest
+    command: ["AltServer", "-u", "${ALT_UDID}", "-a", "${ALT_APPLEID}", "-p", "${ALT_PASSWORD}", "/app.ipa"]
+    volumes:
+      - ./app.ipa:/app.ipa
+    environment:
+      - ALT_UDID=${ALT_UDID}
+      - ALT_APPLEID=${ALT_APPLEID}
+      - ALT_PASSWORD=${ALT_PASSWORD}
+```
+
+### 🔒 Security Best Practices
+
+#### Use App-Specific Passwords
+Always use app-specific passwords, not your main Apple ID password:
+```
+Create app-specific passwords at: https://appleid.apple.com
+Example: abcd-efgh-ijkl-mnop
+```
+
+#### Protect Your Credentials
+```bash
+# Never commit credentials to version control
+echo ".env.local" >> .gitignore
+echo "*.secret" >> .gitignore
+
+# Use Docker secrets for production
+services:
+  altserver:
+    secrets:
+      - apple_id
+      - apple_password
+    command: ["AltServer", "-u", "${ALT_UDID}", "-a", "/run/secrets/apple_id", "-p", "/run/secrets/apple_password"]
+```
+
+### 📋 How to Get Your Device UDID
+
+#### Method 1: From AltStore (Easiest)
+1. Open AltStore on your iOS device
+2. Go to Settings → Device ID
+3. Copy the displayed UDID
+
+#### Method 2: From Mac (with USB connection)
+```bash
+# Connect device via USB and run
+system_profiler SPUSBDataType | grep "Serial Number"
+# Or using idevice_id (requires libimobiledevice)
+idevice_id -l
+```
+
+#### Method 3: From Xcode
+1. Open Xcode → Window → Devices and Simulators
+2. Select your iOS device
+3. Copy the Identifier value
+
+#### Method 4: From iTunes
+1. Connect device to computer
+2. Open iTunes and select your device
+3. Click on serial number to reveal UDID
+4. Right-click and copy
+
+### 🎯 Recommended Usage by Scenario
+
+#### Personal Use (Recommended)
+```bash
+# Deploy daemon server (no credentials needed)
+docker compose up -d
+
+# Use AltStore on iOS device:
+# - Enter Apple ID and password in AltStore settings
+# - Install apps normally through AltStore
+# - Let AltStore handle automatic UDID detection
+```
+
+#### Development/Testing
+```bash
+# Use CLI mode for testing specific builds
+docker run --rm --env-file .env.local \
+  -v ./build/MyApp.ipa:/app.ipa \
+  altserver-linux:latest \
+  AltServer -u "${ALT_UDID}" -a "${ALT_APPLEID}" -p "${ALT_PASSWORD}" /app.ipa
+```
+
+#### CI/CD Automation
+```yaml
+# GitHub Actions example
+- name: Install IPA with AltServer
+  run: |
+    docker run --rm \
+      -e ALT_UDID=${{ secrets.DEVICE_UDID }} \
+      -e ALT_APPLEID=${{ secrets.APPLE_ID }} \
+      -e ALT_PASSWORD=${{ secrets.APPLE_PASSWORD }} \
+      -v ./MyApp.ipa:/app.ipa \
+      altserver-linux:latest \
+      AltServer -u "${ALT_UDID}" -a "${ALT_APPLEID}" -p "${ALT_PASSWORD}" /app.ipa
+```
+
+#### Multiple Device Management
+```bash
+# Deploy server once, connect multiple devices
+docker compose up -d
+
+# Each device:
+# - Connects to same network
+# - Uses AltStore with same Apple ID or different IDs
+# - Gets automatic UDID detection
+# - No additional configuration needed
+```
 
 ## Prerequisites
 

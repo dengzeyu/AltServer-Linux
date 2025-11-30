@@ -2,6 +2,21 @@
 
 This guide covers deploying AltServer-Linux using Docker and Docker Compose, with specific instructions for Portainer deployment.
 
+## 🐳 Docker Hub Integration - Instant Deployment
+
+**NEW**: The AltServer-Linux Docker deployment is now available on Docker Hub!
+
+- **Repository**: [dengzeyu/altserver](https://hub.docker.com/r/dengzeyu/altserver)
+- **Image**: `dengzeyu/altserver:latest`
+- **Size**: 11.2MB (lightweight Alpine-based)
+- **Ready-to-use**: Pre-built with all dependencies
+
+### Quick Start with Docker Hub:
+```bash
+docker pull dengzeyu/altserver:latest
+docker run -d --name altserver dengzeyu/altserver:latest
+```
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -228,20 +243,32 @@ cp .env.example .env
 nano .env
 ```
 
-### 3. Build and Deploy
+### 3. Deploy
 
 ```bash
-# Build Docker image
-docker build -t altserver-linux:latest .
-
-# Start services
+# Start services (pulls pre-built image from Docker Hub)
 docker-compose up -d
 
 # View logs
 docker-compose logs -f altserver
 ```
 
-### 4. Verify Deployment
+**Note**: The docker-compose.yml now uses the pre-built `dengzeyu/altserver:latest` image from Docker Hub for instant deployment.
+
+### 4. Alternative: Build from Source (Advanced)
+
+```bash
+# Build Docker image locally (30+ minutes)
+docker build -t altserver-linux:latest .
+
+# Update docker-compose.yml to use local image
+sed -i 's|image: dengzeyu/altserver:latest|image: altserver-linux:latest|' docker-compose.yml
+
+# Start services
+docker-compose up -d
+```
+
+### 5. Verify Deployment
 
 ```bash
 # Check container status

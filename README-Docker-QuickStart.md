@@ -13,9 +13,9 @@ cp .env.example .env
 
 ### 2. Choose Your Deployment Method
 
-#### Option A: Docker Compose with Pre-built Image (Recommended)
+#### Option A: Docker Compose (Recommended)
 ```bash
-# Pull pre-built image and start
+# Pull pre-built image from Docker Hub and start
 docker compose up -d
 
 # Check status
@@ -24,6 +24,8 @@ docker compose ps
 # View logs
 docker compose logs -f altserver
 ```
+
+**Note**: The docker-compose.yml now uses the pre-built `dengzeyu/altserver:latest` image from Docker Hub by default.
 
 #### Option B: Build from Source (Advanced)
 ```bash
@@ -36,6 +38,8 @@ docker compose ps
 # View logs
 docker compose logs -f altserver
 ```
+
+**Note**: For building from source, you'll need to modify the docker-compose.yml to remove the `image: dengzeyu/altserver:latest` line and add back the build configuration.
 
 #### Option C: Portainer (Recommended)
 1. Open Portainer web interface
@@ -225,7 +229,7 @@ version: '3.8'
 
 services:
   altserver:
-    image: altserver-linux:latest
+    image: dengzeyu/altserver:latest
     container_name: altserver
     restart: unless-stopped
     network_mode: host
